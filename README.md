@@ -69,8 +69,9 @@ Compose service details:
 
 - Publishes `3000:3000`
 - Loads variables from `.env`
-- Mounts `./prisma` to `/app/prisma` to persist the SQLite database
+- Persists SQLite DB in named volume mounted at `/app/prisma/data`
 - Runs `prisma migrate deploy` automatically before starting the app
+- Overrides `DATABASE_URL` in compose to `file:./prisma/data/dev.db`
 
 ### Run locally with Docker Compose
 
@@ -86,3 +87,4 @@ docker compose up -d --build
 4. Deploy the stack.
 
 If you do not map `./prisma:/app/prisma`, your SQLite DB will be ephemeral.
+If you remove the named volume mapping, your SQLite DB will be ephemeral.

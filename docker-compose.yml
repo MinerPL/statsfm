@@ -7,8 +7,13 @@ services:
     restart: unless-stopped
     env_file:
       - stack.env
+    environment:
+      DATABASE_URL: file:./prisma/data/dev.db
     ports:
       - "3000:3000"
     volumes:
-      - ./prisma:/app/prisma
-    command: sh -c "npx prisma migrate deploy && node dist/server.js"
+      - prisma-data:/app/prisma/data
+    command: sh -c "npx prisma migrate deploy --schema /app/prisma/schema.prisma && node dist/server.js"
+
+volumes:
+  prisma-data:
