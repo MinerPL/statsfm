@@ -13,9 +13,10 @@ COPY prisma ./prisma
 COPY src ./src
 COPY tsconfig.json ./tsconfig.json
 
-RUN npx prisma generate --schema /app/prisma/schema.prisma
+RUN npx prisma generate
+RUN npx prisma migrate deploy
 RUN npm run build
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma generate --schema /app/prisma/schema.prisma && npx prisma migrate deploy --schema /app/prisma/schema.prisma && node dist/server.js"]
+CMD ["node", "dist/server.js"]

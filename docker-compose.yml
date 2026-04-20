@@ -13,7 +13,6 @@ services:
       - "3000:3000"
     volumes:
       - prisma-data:/app/prisma/data
-    command: sh -c "npx prisma generate --schema /app/prisma/schema.prisma && npx prisma migrate deploy --schema /app/prisma/schema.prisma && node dist/server.js"
 
 volumes:
   prisma-data:
