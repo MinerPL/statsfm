@@ -6,7 +6,7 @@ services:
     container_name: statsfmwidget
     restart: unless-stopped
     env_file:
-      - .env
+      - stack.env
     ports:
       - "3000:3000"
     volumes:
