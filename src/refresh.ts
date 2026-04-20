@@ -154,6 +154,7 @@ export async function refreshAllUsers(): Promise<{ processed: number; failed: nu
         }
 
         const result = await refreshConnectedUser(nextUser.id);
+        console.log(`Refreshed user ${nextUser.id} - Success: ${result.success} - Duration: ${result.durationMs}ms${result.error ? ` - Error: ${result.error}` : ''}`);
         processed += 1;
         if (!result.success) {
           failed += 1;
