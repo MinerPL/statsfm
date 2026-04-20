@@ -10,8 +10,6 @@ COPY . .
 
 RUN npx prisma generate
 
-COPY config.example.json config.json
-
 RUN npm run build
 
 RUN rm config.json
