@@ -107,6 +107,90 @@ function discordResponse(content: string, components?: unknown[]) {
   };
 }
 
+function normalizeHandleForProfileUrl(handle: string): string {
+  const trimmed = handle.trim();
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://stats.fm/user/${encodeURIComponent(trimmed.replace(/^@+/, ''))}`;
+}
+
+async function sendDmInstruction(discordUserId: string): Promise<void> {
+  if (!env.DISCORD_BOT_TOKEN) {
+    return;
+  }
+
+  const baseUrl = toApiOrigin(env.DISCORD_API_BASE_URL);
+  const authHeader = { authorization: `Bot ${env.DISCORD_BOT_TOKEN}` };
+
+  const dmResponse = await fetch(`${baseUrl}/api/v10/users/@me/channels`, {
+    method: 'POST',
+    headers: {
+      ...authHeader,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({ recipient_id: discordUserId })
+  });
+
+  if (!dmResponse.ok) {
+    const body = await dmResponse.text();
+    throw new Error(`Failed to create DM channel: ${body}`);
+  }
+
+  const dmChannel = await dmResponse.json() as { id: string };
+  const messageResponse = await fetch(`${baseUrl}/api/v10/channels/${dmChannel.id}/messages`, {
+    method: 'POST',
+    headers: {
+      ...authHeader,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      content: 'Welcome! To connect your profile widget, use `/login` and then `/link username:<your stats.fm username>`.'
+    })
+  });
+
+  if (!messageResponse.ok) {
+    const body = await messageResponse.text();
+    throw new Error(`Failed to send DM message: ${body}`);
+  }
+}
+
+async function handleWebhookEventAsync(payload: {
+  event?: {
+    type?: string;
+    data?: {
+      user?: { id?: string };
+    };
+  };
+}): Promise<void> {
+  const eventType = payload.event?.type;
+  const eventUserId = payload.event?.data?.user?.id;
+
+  if (!eventType || !eventUserId) {
+    return;
+  }
+
+  if (eventType === 'APPLICATION_AUTHORIZED') {
+    try {
+      await sendDmInstruction(eventUserId);
+    } catch (error) {
+      app.log.warn({ error }, 'failed to send authorized-event onboarding DM');
+    }
+    return;
+  }
+
+  if (eventType === 'APPLICATION_DEAUTHORIZED') {
+    await prisma.connectedUser.deleteMany({
+      where: {
+        discordUserId: eventUserId
+      }
+    });
+    await syncConnectedUserMetrics();
+  }
+}
+
 async function handleLoginCommand(discordUserId: string) {
   const oauthUrl = createOauthUrl(discordUserId);
   return discordResponse(
@@ -135,6 +219,7 @@ async function handleLinkCommand(discordUserId: string, statsFmHandle: string) {
   }
 
   const customId = `check_link:${encodeURIComponent(sanitizedHandle)}`;
+  const profileUrl = normalizeHandleForProfileUrl(sanitizedHandle);
   return discordResponse(
     [
       `To link stats.fm, add your Discord user ID to your stats.fm bio, you can remove it after verification:`,
@@ -152,6 +237,12 @@ async function handleLinkCommand(discordUserId: string, statsFmHandle: string) {
             style: 1,
             custom_id: customId,
             label: 'Check connection'
+          },
+          {
+            type: 2,
+            style: 5,
+            label: 'Open stats.fm profile',
+            url: profileUrl
           }
         ]
       }
@@ -233,6 +324,40 @@ app.get('/health', async () => ({ ok: true }));
 app.get('/metrics', async (_request, reply) => {
   reply.header('content-type', 'text/plain; version=0.0.4');
   return metricsText();
+});
+
+app.post('/webhook-events', async (request, reply) => {
+  const verified = await verifyRequest(request, reply);
+  if (!verified) {
+    return;
+  }
+
+  const payload = request.body as {
+    type?: number;
+    event?: {
+      type?: string;
+      data?: {
+        user?: { id?: string };
+      };
+    };
+  };
+
+  if (payload.type === 0) {
+    reply.header('content-type', 'application/json');
+    return reply.code(204).send();
+  }
+
+  if (payload.type === 1) {
+    void handleWebhookEventAsync(payload).catch((error) => {
+      app.log.error({ error }, 'webhook event processing failed');
+    });
+
+    reply.header('content-type', 'application/json');
+    return reply.code(204).send();
+  }
+
+  reply.header('content-type', 'application/json');
+  return reply.code(204).send();
 });
 
 app.get('/auth/discord/callback', async (request, reply) => {
@@ -343,6 +468,7 @@ app.get('/auth/discord/callback', async (request, reply) => {
   });
 
   await syncConnectedUserMetrics();
+
   reply.header('content-type', 'text/plain; charset=utf-8');
   return 'Discord OAuth login successful. You can return to Discord and continue with /link.';
 });
