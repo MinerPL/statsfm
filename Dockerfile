@@ -1,22 +1,25 @@
-FROM node:22-bookworm-slim
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-RUN apt-get update -y \
-	&& apt-get install -y --no-install-recommends openssl ca-certificates \
-	&& rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
 
-COPY package*.json ./
 RUN npm ci
 
-COPY prisma ./prisma
-COPY src ./src
-COPY tsconfig.json ./tsconfig.json
+COPY . .
 
 RUN npx prisma generate
-RUN npx prisma migrate deploy
+
+COPY config.example.json config.json
+
 RUN npm run build
 
-EXPOSE 3000
+RUN rm config.json
 
-CMD ["node", "dist/server.js"]
+FROM node:24-alpine AS runner
+
+WORKDIR /app
+
+COPY --from=builder /app .
+
+CMD ["npm", "start"]
