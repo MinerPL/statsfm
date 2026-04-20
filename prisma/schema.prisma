@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ConnectedUser {
+  id                  String          @id @default(cuid())
+  discordUserId       String          @unique
+  discordIdentityId   String?
+  statsFmUsername     String?
+  statsFmProfileUrl   String?
+  displayName         String?
+  avatarUrl           String?
+  isActive            Boolean         @default(true)
+  connectedAt         DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  lastRefreshedAt     DateTime?
+  lastManualRefreshAt DateTime?
+  lastRefreshStatus   String          @default("never")
+  lastRefreshError    String?
+  refreshFailures     Int             @default(0)
+  statsSnapshot       StatsSnapshot?
+  refreshLogs         RefreshLog[]
+}
+
+model StatsSnapshot {
+  id                String         @id @default(cuid())
+  connectedUserId   String         @unique
+  connectedUser     ConnectedUser  @relation(fields: [connectedUserId], references: [id], onDelete: Cascade)
+  username         String?
+  statsfmUsername  String?
+  avatarUrl        String?
+  avatarSmallUrl   String?
+  streams          Int            @default(0)
+  listeningTimeSec BigInt         @default(0)
+  artists          Int            @default(0)
+  mostStreamedArtist String?
+  mostStreamedAlbum  String?
+  topTrack         String?
+  rawPayload       String
+  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime       @default(now())
+}
+
+model RefreshLog {
+  id               String         @id @default(cuid())
+  connectedUserId  String
+  connectedUser    ConnectedUser  @relation(fields: [connectedUserId], references: [id], onDelete: Cascade)
+  success          Boolean
+  error            String?
+  durationMs       Int?
+  createdAt        DateTime       @default(now())
+}

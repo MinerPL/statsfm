@@ -1,0 +1,10 @@
+node_modules
+/dist
+.env
+.env.*
+.prisma
+prisma/*/*.db
+prisma/*/*.db-journal
+*.db-journal
+*.db
+.idea/

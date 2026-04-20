@@ -1,0 +1,14 @@
+services:
+  statsfmwidget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: statsfmwidget
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./prisma:/app/prisma
+    command: sh -c "npx prisma migrate deploy && node dist/server.js"
