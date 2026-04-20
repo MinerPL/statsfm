@@ -8,7 +8,7 @@ services:
     env_file:
       - stack.env
     environment:
-      DATABASE_URL: file:./prisma/data/dev.db
+      DATABASE_URL: file:./data/dev.db
     ports:
       - "3000:3000"
     volumes:
