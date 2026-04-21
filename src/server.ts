@@ -336,6 +336,7 @@ async function handleRefreshCommand(discordUserId: string) {
 
   const result = await refreshConnectedUser(user.id);
   if (!result.success) {
+    console.log(`Refresh failed for user ${user.id}`);
     return discordResponse(`Refresh failed: ${result.error ?? 'Unknown error'}`);
   }
 
@@ -619,6 +620,7 @@ app.setNotFoundHandler(async (_request, reply) => {
 
 async function startScheduler() {
   await syncConnectedUserMetrics();
+  await refreshAllUsers();
   const interval = setInterval(() => {
     void refreshAllUsers().catch((error) => app.log.error({ error }, 'scheduled refresh failed'));
   }, env.STATS_REFRESH_INTERVAL_MS);

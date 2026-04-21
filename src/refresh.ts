@@ -98,6 +98,7 @@ export async function refreshConnectedUser(userId: string): Promise<{ success: b
 
     return { success: true, durationMs };
   } catch (error) {
+    console.log(error);
     const durationMs = Date.now() - startedAt;
     const message = error instanceof Error ? error.message : 'Unknown refresh error';
 
