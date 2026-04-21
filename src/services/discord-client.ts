@@ -59,6 +59,29 @@ export async function patchDiscordProfile(input: {
   displayName?: string | null;
   snapshot: StatsSnapshotPayload;
 }): Promise<void> {
+  await patchDiscordProfileBody(input, {
+    username: input.displayName ?? input.snapshot.username ?? input.snapshot.statsfmUsername ?? '',
+    metadata: {},
+    data: {
+      dynamic: buildDynamic(input.snapshot)
+    }
+  });
+}
+
+export async function patchDiscordProfileRemoved(input: {
+  discordUserId: string;
+  discordIdentityId?: string | null;
+}): Promise<void> {
+  await patchDiscordProfileBody(input, null);
+}
+
+async function patchDiscordProfileBody(
+  input: {
+    discordUserId: string;
+    discordIdentityId?: string | null;
+  },
+  body: Record<string, unknown> | null
+): Promise<void> {
   const applicationId = env.DISCORD_APPLICATION_ID;
   const token = env.DISCORD_BOT_TOKEN;
   const identityId = input.discordIdentityId ?? env.DISCORD_METADATA_IDENTITY_ID;
@@ -76,13 +99,7 @@ export async function patchDiscordProfile(input: {
         authorization: `Bot ${token}`,
         'content-type': 'application/json'
       },
-      body: JSON.stringify({
-        username: input.displayName ?? input.snapshot.username ?? input.snapshot.statsfmUsername ?? '',
-        metadata: {},
-        data: {
-          dynamic: buildDynamic(input.snapshot)
-        }
-      })
+      body: JSON.stringify(body)
     }
   );
 

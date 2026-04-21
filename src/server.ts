@@ -6,6 +6,7 @@ import { prisma } from './db';
 import { env } from './config';
 import { metricsText } from './metrics';
 import { refreshAllUsers, refreshConnectedUser, syncConnectedUserMetrics } from './refresh';
+import { patchDiscordProfileRemoved } from './services/discord-client';
 import { verifyStatsFmBioContainsDiscordUserId } from './services/statsfm-link';
 
 const app = Fastify({ logger: true });
@@ -182,6 +183,28 @@ async function handleWebhookEventAsync(payload: {
   }
 
   if (eventType === 'APPLICATION_DEAUTHORIZED') {
+    try {
+      await patchDiscordProfileRemoved({
+        discordUserId: eventUserId
+      });
+    } catch (error) {
+      app.log.warn({ error }, 'failed to send deauthorized-event removal PATCH');
+    }
+
+    const user = await prisma.connectedUser.findUnique({where: { discordUserId: eventUserId }});
+
+    await prisma.refreshLog.deleteMany({
+      where: {
+        connectedUserId: user?.id
+      }
+    })
+
+    await prisma.statsSnapshot.deleteMany({
+      where: {
+        connectedUserId: user?.id
+      }
+    });
+
     await prisma.connectedUser.deleteMany({
       where: {
         discordUserId: eventUserId
