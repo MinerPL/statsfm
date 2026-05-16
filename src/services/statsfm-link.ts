@@ -60,19 +60,24 @@ export async function verifyStatsFmBioContainsDiscordUserId(
   discordUserId: string
 ): Promise<{ ok: boolean; matchedText?: string; userId: string; customId: string; displayName: string }> {
   const user = await resolveStatsFmUser(handleInput);
-  const profile = await statsfm.users.profile(user.id);
-  const bio = profile.bio ?? '';
-  const normalizedBio = bio.toLowerCase();
-  const normalizedId = discordUserId.toLowerCase();
+  const profile = await statsfm.users.get(user.id);
 
-  const hasRawId = normalizedBio.includes(normalizedId);
-  const hasMention = normalizedBio.includes(`<@${normalizedId}>`);
-  const ok = hasRawId || hasMention;
+  const connection = profile.socialMediaConnections.find((connection) => connection.platform.name === "Discord")
+    if (!connection) {
+      return {
+        ok: false,
+        matchedText: undefined,
+        userId: user.id,
+        customId: user.customId,
+        displayName: user.displayName
+      };
+    }
+    const ok = connection.platformUserId === discordUserId;
 
   return {
     ok,
     matchedText: ok ? discordUserId : undefined,
-    userId: user.id,
+    userId: connection.platformUserId,
     customId: user.customId,
     displayName: user.displayName
   };

@@ -108,16 +108,6 @@ function discordResponse(content: string, components?: unknown[]) {
   };
 }
 
-function normalizeHandleForProfileUrl(handle: string): string {
-  const trimmed = handle.trim();
-
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
-
-  return `https://stats.fm/user/${encodeURIComponent(trimmed.replace(/^@+/, ''))}`;
-}
-
 async function sendDmInstruction(discordUserId: string): Promise<void> {
   if (!env.DISCORD_BOT_TOKEN) {
     return;
@@ -234,7 +224,7 @@ async function handleLoginCommand(discordUserId: string) {
   );
 }
 
-async function handleLinkCommand(discordUserId: string, statsFmHandle: string) {
+async function handleLinkCommand(statsFmHandle: string) {
   const sanitizedHandle = statsFmHandle.trim();
 
   if (!sanitizedHandle) {
@@ -242,11 +232,10 @@ async function handleLinkCommand(discordUserId: string, statsFmHandle: string) {
   }
 
   const customId = `check_link:${encodeURIComponent(sanitizedHandle)}`;
-  const profileUrl = normalizeHandleForProfileUrl(sanitizedHandle);
+
   return discordResponse(
     [
-      `To link stats.fm, add your Discord user ID to your stats.fm bio, you can remove it after verification:`,
-      `\`${discordUserId}\``,
+      `To link stats.fm, connect your Discord account to your stats.fm, you can remove it after verification:`,
       '',
       `stats.fm account: \`${sanitizedHandle}\``,
       'Then click **Check connection**.'
@@ -264,8 +253,8 @@ async function handleLinkCommand(discordUserId: string, statsFmHandle: string) {
           {
             type: 2,
             style: 5,
-            label: 'Open stats.fm profile',
-            url: profileUrl
+            label: 'Settings URL',
+            url: "https://stats.fm/settings/connections"
           }
         ]
       }
@@ -532,7 +521,7 @@ app.post('/interactions', async (request, reply) => {
 
     if (commandName === 'link') {
       const usernameOption = interaction.data?.options?.find((option) => option.name === 'username')?.value;
-      return handleLinkCommand(discordUserId, usernameOption ?? '');
+      return handleLinkCommand(usernameOption ?? '');
     }
 
     if (commandName === 'refresh') {
