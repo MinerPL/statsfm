@@ -271,7 +271,7 @@ async function handleCheckLinkButton(discordUserId: string, customId: string) {
 
     if (!verification.ok) {
       return discordResponse(
-        `Connection check failed. Add your Discord ID \`${discordUserId}\` to your stats.fm bio and try again.`
+        `Connection check failed. Connect your Discord account to your stats.fm account and try again.`
       );
     }
 

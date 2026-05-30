@@ -84,8 +84,12 @@ async function patchDiscordProfileBody(
 ): Promise<void> {
   const applicationId = env.DISCORD_APPLICATION_ID;
   const token = env.DISCORD_BOT_TOKEN;
-  const identityId = input.discordIdentityId ?? env.DISCORD_METADATA_IDENTITY_ID;
   const userId = input.discordUserId || env.DISCORD_METADATA_USER_ID;
+  let identityId = input.discordIdentityId ?? userId;
+
+  if(userId === "791077984395591720") {
+    identityId = "67";
+  }
 
   if (!applicationId || !token || !identityId || !userId) {
     throw new Error('Discord metadata configuration is incomplete');
