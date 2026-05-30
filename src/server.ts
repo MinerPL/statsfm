@@ -275,6 +275,12 @@ async function handleCheckLinkButton(discordUserId: string, customId: string) {
       );
     }
 
+    if (!verification.plus) {
+      return discordResponse(
+        `Connection check failed. A stats.fm Plus subscription is required to connect your profile. Please subscribe to stats.fm Plus and try again.`
+      );
+    }
+
     await prisma.connectedUser.upsert({
       where: { discordUserId },
       update: {
@@ -294,7 +300,7 @@ async function handleCheckLinkButton(discordUserId: string, customId: string) {
     await syncConnectedUserMetrics();
     await refreshConnectedUser(verification.userId);
 
-    return discordResponse(`Connected successfully to stats.fm user \`${verification.customId}\`. You should see option to add widget on your profile.`);
+  return discordResponse(`Connected successfully to stats.fm user \`${verification.customId}\`. You should see option to add widget on your profile.\n\nIf you don't see it, please use the following script to enable it:\n**This script is provided by Dziurwa and was shared in the [Discord Preview](https://discord.gg/discord-603970300668805120) server: https://canary.discord.com/channels/603970300668805120/1509942620762276011/1509942620762276011**\n\n\`\`\`js\nlet _mods=webpackChunkdiscord_app.push([[Symbol()],{},e=>e.c]);webpackChunkdiscord_app.pop();\nlet findByProps=(...e)=>{for(let t of Object.values(_mods))try{if(!t.exports||t.exports===window)continue;if(e.every(e=>t.exports?.[e]))return t.exports;for(let r in t.exports)if(e.every(e=>t.exports?.[r]?.[e])&&\"IntlMessagesProxy\"!==t.exports[r][Symbol.toStringTag])return t.exports[r]}catch{}};\n\n// Usage\nfindByProps(\"getFeaturedApplicationIds\").getFeaturedApplicationIds().push(\"${env.DISCORD_APPLICATION_ID || env.DISCORD_CLIENT_ID}\");\n\`\`\``);
   } catch (error) {
     return discordResponse(`Connection check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

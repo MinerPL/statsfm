@@ -24,7 +24,11 @@ export async function refreshConnectedUser(userId: string): Promise<{ success: b
     });
 
     if (!user || !user.isActive) {
-      throw new Error('User not found or inactive');
+      return {
+        success: false,
+        error: 'User not found or inactive',
+        durationMs: Date.now() - startedAt
+      }
     }
 
     const snapshot = await fetchStatsSnapshot({

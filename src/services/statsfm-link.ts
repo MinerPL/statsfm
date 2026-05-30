@@ -58,7 +58,7 @@ export async function resolveStatsFmUser(handleInput: string): Promise<{ id: str
 export async function verifyStatsFmBioContainsDiscordUserId(
   handleInput: string,
   discordUserId: string
-): Promise<{ ok: boolean; matchedText?: string; userId: string; customId: string; displayName: string }> {
+): Promise<{ ok: boolean; matchedText?: string; userId: string; customId: string; plus: boolean; displayName: string }> {
   const user = await resolveStatsFmUser(handleInput);
   const profile = await statsfm.users.get(user.id);
 
@@ -67,6 +67,7 @@ export async function verifyStatsFmBioContainsDiscordUserId(
       return {
         ok: false,
         matchedText: undefined,
+        plus: profile.isPlus || false,
         userId: user.id,
         customId: user.customId,
         displayName: user.displayName
@@ -78,6 +79,7 @@ export async function verifyStatsFmBioContainsDiscordUserId(
     ok,
     matchedText: ok ? discordUserId : undefined,
     userId: connection.platformUserId,
+    plus: profile.isPlus || false,
     customId: user.customId,
     displayName: user.displayName
   };
