@@ -108,6 +108,156 @@ function discordResponse(content: string, components?: unknown[]) {
   };
 }
 
+function landingPageHtml(): string {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>stats.fm Discord Widget</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1115;
+        --panel: rgba(18, 22, 31, 0.92);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --text: #f3f6fb;
+        --muted: #a7b0c0;
+        --accent: #7ee0c3;
+        --accent-strong: #5bbfa1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+        font-family: Inter, Segoe UI, system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(126, 224, 195, 0.2), transparent 36%),
+          radial-gradient(circle at bottom right, rgba(91, 191, 161, 0.18), transparent 30%),
+          linear-gradient(180deg, #12151b 0%, var(--bg) 100%);
+      }
+
+      main {
+        width: min(760px, 100%);
+        padding: 40px;
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        background: var(--panel);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(18px);
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.2rem, 4vw, 4rem);
+        line-height: 1.02;
+      }
+
+      p {
+        margin: 18px 0 0;
+        font-size: 1.04rem;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        margin-top: 28px;
+      }
+
+      .card {
+        padding: 18px 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .card strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: var(--accent-strong);
+        text-decoration: underline;
+      }
+
+      .footer {
+        margin-top: 28px;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">stats.fm Discord Widget</p>
+      <h1>Discord has restricted custom widgets you do not own.</h1>
+      <p>
+        This page explains the change and points to the self-hosted version of this project for anyone who wants to run it themselves.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>What changed</strong>
+          <div>
+            Discord no longer lets you add application widgets to your profile board unless you own the application or belong to the owning team with developer access.
+            Existing widgets can still remain visible and keep updating metadata, but you cannot re-add them after removing them.
+          </div>
+        </div>
+
+        <div class="card">
+          <strong>Self-hosting</strong>
+          <div>
+            If you want to host this yourself, use this repository: <a href="https://github.com/MinerPL/statsfm" rel="noreferrer noopener" target="_blank">github.com/MinerPL/statsfm</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <strong>Source</strong>
+          <div>
+            This update comes from a message by BigNutty on the Discord Previews server.
+          </div>
+        </div>
+      </div>
+
+      <p class="footer">
+        As of <time datetime="2026-04-03T00:30:00Z">April 3, 2026</time>, the new restriction applies to custom widgets added to profile boards.
+      </p>
+    </main>
+  </body>
+</html>`;
+}
+
+app.get('/', async (_request, reply) => {
+  reply.header('content-type', 'text/html; charset=utf-8');
+  return reply.send(landingPageHtml());
+});
+
 async function sendDmInstruction(discordUserId: string): Promise<void> {
   if (!env.DISCORD_BOT_TOKEN) {
     return;
