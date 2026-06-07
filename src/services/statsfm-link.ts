@@ -1,9 +1,7 @@
 import { Api, SearchTypes } from '@statsfm/statsfm.js';
 import { env } from '../config';
 
-const statsfm = new Api({
-  auth: env.STATSFM_ACCESS_TOKEN ? { accessToken: env.STATSFM_ACCESS_TOKEN } : {}
-});
+const statsfm = new Api();
 
 function normalizeStatsFmHandle(input: string): string {
   const trimmed = input.trim();

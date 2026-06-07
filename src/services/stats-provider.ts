@@ -1,10 +1,7 @@
 import { Api, OrderBySetting, Range, SearchTypes } from '@statsfm/statsfm.js';
-import { env } from '../config';
 import type { StatsSnapshotPayload } from '../types';
 
-const statsfm = new Api({
-  auth: env.STATSFM_ACCESS_TOKEN ? { accessToken: env.STATSFM_ACCESS_TOKEN } : {}
-});
+const statsfm = new Api();
 
 function normalizeStatsFmHandle(input: {
   statsFmUsername?: string | null;
