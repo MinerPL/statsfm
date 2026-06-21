@@ -1,8 +1,6 @@
 services:
   statsfmwidget:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/minerpl/statsfm:latest
     container_name: statsfmwidget
     restart: unless-stopped
     env_file:
