@@ -7,6 +7,13 @@
 3. Generate Prisma client: `npx prisma generate`
 4. Start dev server: `npm run dev`
 
+## Setting up Discord Application
+1. Create a new application in the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Copy application ID and past it in [import-widget.js](./import-widget.js) at the top of the file.
+3. Copy content of [import-widget.js](./import-widget.js) and paste it in the browser console on the Discord Developer Portal page for your application.
+	* Sometimes browser console may not allow pasting, if you have issues while pasting, write `allow pasting` in the console and press enter, then try pasting again.
+4. Setup application and authorize it on your account.
+
 ## Required Discord Config
 
 - Set in `.env`:
